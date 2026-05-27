@@ -17,6 +17,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DiagnosisProvider } from "@/context/DiagnosisContext";
 import { GrowPlanProvider } from "@/context/GrowPlanContext";
 import { LocationProvider } from "@/context/LocationContext";
+import { MarketProvider } from "@/context/MarketContext";
 import { setBaseUrl } from "@workspace/api-client-react";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -31,6 +32,7 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="result/[id]" options={{ title: "Diagnosis Result", presentation: "card" }} />
       <Stack.Screen name="grow-plan/[id]" options={{ title: "Grow Plan", presentation: "card" }} />
+      <Stack.Screen name="market/add-listing" options={{ title: "Add Product", headerShown: false }} />
     </Stack>
   );
 }
@@ -56,6 +58,7 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <LocationProvider>
+            <MarketProvider>
             <GrowPlanProvider>
               <DiagnosisProvider>
                 <GestureHandlerRootView>
@@ -65,6 +68,7 @@ export default function RootLayout() {
                 </GestureHandlerRootView>
               </DiagnosisProvider>
             </GrowPlanProvider>
+            </MarketProvider>
           </LocationProvider>
         </QueryClientProvider>
       </ErrorBoundary>
