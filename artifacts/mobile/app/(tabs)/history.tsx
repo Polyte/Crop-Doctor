@@ -2,6 +2,7 @@ import { DiagnosisCard } from "@/components/DiagnosisCard";
 import { useDiagnosis } from "@/context/DiagnosisContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Head from "expo-router/head";
 import React, { useState } from "react";
 import {
   Alert,
@@ -40,6 +41,10 @@ export default function HistoryScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Head>
+        <title>Diagnosis History — Farmguard</title>
+        <meta name="description" content="Review your past crop and livestock AI diagnoses. Track conditions over time and revisit treatment recommendations." />
+      </Head>
       {/* Filter bar */}
       <View
         style={[

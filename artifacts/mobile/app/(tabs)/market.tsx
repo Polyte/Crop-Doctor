@@ -1,3 +1,4 @@
+import Head from "expo-router/head";
 import { useMarket, type FarmerProfile, type ListingWithFarmer, type Listing } from "@/context/MarketContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -548,6 +549,10 @@ export default function MarketScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <Head>
+        <title>Farmers Market — Farmguard</title>
+        <meta name="description" content="Buy fresh produce, crops, dairy, and livestock directly from local farmers. Register your farm to list and sell your products on Farmguard Market." />
+      </Head>
       {/* Header */}
       <View style={styles.header}>
         <View>

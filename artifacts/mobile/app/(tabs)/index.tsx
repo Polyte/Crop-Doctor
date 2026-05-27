@@ -2,6 +2,7 @@ import { DiagnosisCard } from "@/components/DiagnosisCard";
 import { useDiagnosis } from "@/context/DiagnosisContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Head from "expo-router/head";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
@@ -35,6 +36,10 @@ export default function HomeScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
+      <Head>
+        <title>Farmguard — AI Farm Diagnosis & Planting Calendar</title>
+        <meta name="description" content="AI-powered crop disease and livestock health diagnosis, moon-aware planting calendar, and local farmers market — all in one app for smallholder farmers." />
+      </Head>
       {/* Header */}
       <View style={styles.header}>
         <View>

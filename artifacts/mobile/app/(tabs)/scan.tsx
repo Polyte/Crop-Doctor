@@ -3,6 +3,7 @@ import { useColors } from "@/hooks/useColors";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
+import Head from "expo-router/head";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -154,6 +155,10 @@ export default function ScanScreen() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      <Head>
+        <title>Diagnose — Farmguard</title>
+        <meta name="description" content="Upload a photo or describe symptoms to instantly identify crop diseases, pest damage, and livestock health conditions with AI diagnosis." />
+      </Head>
       <Text style={[styles.pageTitle, { color: colors.foreground }]}>New Diagnosis</Text>
       <Text style={[styles.pageSubtitle, { color: colors.mutedForeground }]}>
         Photo + description gives the best results

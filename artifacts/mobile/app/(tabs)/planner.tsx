@@ -7,6 +7,7 @@ import { getSeason, getSeasonCropRecommendations } from "@/utils/season";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
+import Head from "expo-router/head";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -156,6 +157,10 @@ export default function PlannerScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
+      <Head>
+        <title>Grow Planner — Farmguard</title>
+        <meta name="description" content="Plan your planting with moon phase guidance. Get AI-generated grow schedules tailored to your location, season, and crop — including biodynamic moon advice." />
+      </Head>
       <Text style={[styles.pageTitle, { color: colors.foreground }]}>Grow Planner</Text>
       <Text style={[styles.pageSub, { color: colors.mutedForeground }]}>
         Moon-aware planting calendar for your season
