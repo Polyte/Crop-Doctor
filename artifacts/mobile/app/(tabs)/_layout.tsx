@@ -20,6 +20,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "camera", selected: "camera.fill" }} />
         <Label>Diagnose</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="planner">
+        <Icon sf={{ default: "calendar", selected: "calendar" }} />
+        <Label>Planner</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="history">
         <Icon sf={{ default: "clock", selected: "clock.fill" }} />
         <Label>History</Label>
@@ -60,12 +64,7 @@ function ClassicTabLayout() {
               style={StyleSheet.absoluteFill}
             />
           ) : isWeb ? (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                { backgroundColor: colors.background },
-              ]}
-            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]} />
           ) : null,
       }}
     >
@@ -74,11 +73,7 @@ function ClassicTabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="house" tintColor={color} size={24} />
-            ) : (
-              <Feather name="home" size={22} color={color} />
-            ),
+            isIOS ? <SymbolView name="house" tintColor={color} size={24} /> : <Feather name="home" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -86,11 +81,15 @@ function ClassicTabLayout() {
         options={{
           title: "Diagnose",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="camera" tintColor={color} size={24} />
-            ) : (
-              <MaterialCommunityIcons name="brain" size={24} color={color} />
-            ),
+            isIOS ? <SymbolView name="camera" tintColor={color} size={24} /> : <MaterialCommunityIcons name="brain" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="planner"
+        options={{
+          title: "Planner",
+          tabBarIcon: ({ color }) =>
+            isIOS ? <SymbolView name="calendar" tintColor={color} size={24} /> : <MaterialCommunityIcons name="calendar-star" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -98,11 +97,7 @@ function ClassicTabLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color }) =>
-            isIOS ? (
-              <SymbolView name="clock" tintColor={color} size={24} />
-            ) : (
-              <Feather name="clock" size={22} color={color} />
-            ),
+            isIOS ? <SymbolView name="clock" tintColor={color} size={24} /> : <Feather name="clock" size={22} color={color} />,
         }}
       />
     </Tabs>

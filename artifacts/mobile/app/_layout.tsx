@@ -15,6 +15,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DiagnosisProvider } from "@/context/DiagnosisContext";
+import { GrowPlanProvider } from "@/context/GrowPlanContext";
+import { LocationProvider } from "@/context/LocationContext";
 import { setBaseUrl } from "@workspace/api-client-react";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -27,13 +29,8 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="result/[id]"
-        options={{
-          title: "Diagnosis Result",
-          presentation: "card",
-        }}
-      />
+      <Stack.Screen name="result/[id]" options={{ title: "Diagnosis Result", presentation: "card" }} />
+      <Stack.Screen name="grow-plan/[id]" options={{ title: "Grow Plan", presentation: "card" }} />
     </Stack>
   );
 }
@@ -58,13 +55,17 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <DiagnosisProvider>
-            <GestureHandlerRootView>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </DiagnosisProvider>
+          <LocationProvider>
+            <GrowPlanProvider>
+              <DiagnosisProvider>
+                <GestureHandlerRootView>
+                  <KeyboardProvider>
+                    <RootLayoutNav />
+                  </KeyboardProvider>
+                </GestureHandlerRootView>
+              </DiagnosisProvider>
+            </GrowPlanProvider>
+          </LocationProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
