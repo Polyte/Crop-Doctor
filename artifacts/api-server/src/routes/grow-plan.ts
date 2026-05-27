@@ -63,10 +63,14 @@ Include 5-7 phases from soil preparation to harvest, moon phase guidance for eac
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";
 
+    // Strip markdown code fences if Claude wraps the JSON
+    const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+
     let plan;
     try {
-      plan = JSON.parse(text);
+      plan = JSON.parse(stripped);
     } catch {
+      req.log.error({ text: stripped.slice(0, 500) }, "Grow plan JSON parse failed");
       res.status(500).json({ error: "Failed to generate plan. Please try again." });
       return;
     }

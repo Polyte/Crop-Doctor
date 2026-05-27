@@ -53,17 +53,25 @@ export default function PlannerScreen() {
         return;
       }
       const coords = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const [geo] = await Location.reverseGeocodeAsync({
-        latitude: coords.coords.latitude,
-        longitude: coords.coords.longitude,
-      });
-      await setLocation({
-        latitude: coords.coords.latitude,
-        longitude: coords.coords.longitude,
-        country: geo?.country ?? "Unknown",
-        region: geo?.region ?? geo?.city ?? "Unknown",
-        displayName: [geo?.city ?? geo?.region, geo?.country].filter(Boolean).join(", "),
-      });
+      const lat = coords.coords.latitude;
+      const lon = coords.coords.longitude;
+
+      let country = "";
+      let region = "";
+      let displayName = `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`;
+
+      try {
+        const [geo] = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
+        if (geo) {
+          country = geo.country ?? "";
+          region = geo.region ?? geo.city ?? "";
+          displayName = [geo.city ?? geo.region, geo.country].filter(Boolean).join(", ") || displayName;
+        }
+      } catch {
+        // Geocoding unavailable on web — use coordinates as display name
+      }
+
+      await setLocation({ latitude: lat, longitude: lon, country, region, displayName });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
       Alert.alert("Location error", "Could not fetch location. Please enter it manually.");
