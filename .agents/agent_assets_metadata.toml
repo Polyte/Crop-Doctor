@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "Kt2ssI5bwpdEQF7Em4nqU"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "farmguard app icon"
