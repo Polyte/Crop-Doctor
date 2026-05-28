@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import diagnoseRouter from "./diagnose";
 import growPlanRouter from "./grow-plan";
 import marketRouter from "./market";
+import landRouter from "./land";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use(healthRouter);
 router.use(diagnoseRouter);
 router.use(growPlanRouter);
 router.use(marketRouter);
+router.use(landRouter);
 
 export default router;

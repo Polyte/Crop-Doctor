@@ -24,6 +24,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "calendar", selected: "calendar" }} />
         <Label>Planner</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="land">
+        <Icon sf={{ default: "leaf", selected: "leaf.fill" }} />
+        <Label>Land</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="market">
         <Icon sf={{ default: "cart", selected: "cart.fill" }} />
         <Label>Market</Label>
@@ -94,6 +98,14 @@ function ClassicTabLayout() {
           title: "Planner",
           tabBarIcon: ({ color }) =>
             isIOS ? <SymbolView name="calendar" tintColor={color} size={24} /> : <MaterialCommunityIcons name="calendar-star" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="land"
+        options={{
+          title: "Land",
+          tabBarIcon: ({ color }) =>
+            isIOS ? <SymbolView name="leaf" tintColor={color} size={24} /> : <MaterialCommunityIcons name="map-marker-multiple-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

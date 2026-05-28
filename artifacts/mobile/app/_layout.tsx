@@ -16,6 +16,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DiagnosisProvider } from "@/context/DiagnosisContext";
 import { GrowPlanProvider } from "@/context/GrowPlanContext";
+import { LandPlannerProvider } from "@/context/LandPlannerContext";
 import { LocationProvider } from "@/context/LocationContext";
 import { MarketProvider } from "@/context/MarketContext";
 import { setBaseUrl } from "@workspace/api-client-react";
@@ -33,6 +34,10 @@ function RootLayoutNav() {
       <Stack.Screen name="result/[id]" options={{ title: "Diagnosis Result", presentation: "card" }} />
       <Stack.Screen name="grow-plan/[id]" options={{ title: "Grow Plan", presentation: "card" }} />
       <Stack.Screen name="market/add-listing" options={{ title: "Add Product", headerShown: false }} />
+      <Stack.Screen name="land/plot-creator" options={{ title: "Create Land Plot", headerShown: false }} />
+      <Stack.Screen name="land/plot-detail" options={{ title: "Land Plot", headerShown: false }} />
+      <Stack.Screen name="land/plant-detail" options={{ title: "Plant Detail", headerShown: false }} />
+      <Stack.Screen name="land/stores" options={{ title: "Nearby Agro Stores", headerShown: false }} />
     </Stack>
   );
 }
@@ -58,17 +63,19 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <LocationProvider>
-            <MarketProvider>
-            <GrowPlanProvider>
-              <DiagnosisProvider>
-                <GestureHandlerRootView>
-                  <KeyboardProvider>
-                    <RootLayoutNav />
-                  </KeyboardProvider>
-                </GestureHandlerRootView>
-              </DiagnosisProvider>
-            </GrowPlanProvider>
-            </MarketProvider>
+            <LandPlannerProvider>
+              <MarketProvider>
+                <GrowPlanProvider>
+                  <DiagnosisProvider>
+                    <GestureHandlerRootView>
+                      <KeyboardProvider>
+                        <RootLayoutNav />
+                      </KeyboardProvider>
+                    </GestureHandlerRootView>
+                  </DiagnosisProvider>
+                </GrowPlanProvider>
+              </MarketProvider>
+            </LandPlannerProvider>
           </LocationProvider>
         </QueryClientProvider>
       </ErrorBoundary>
