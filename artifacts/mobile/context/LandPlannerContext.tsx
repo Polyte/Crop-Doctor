@@ -77,7 +77,7 @@ interface LandPlannerContextType {
   deletePlant: (id: number) => Promise<void>;
   addFollowup: (data: { plantId: number; action: string; description?: string; healthStatus?: string; photoUri?: string }) => Promise<PlantFollowup>;
   getFollowups: (plantId: number) => Promise<PlantFollowup[]>;
-  getStores: (lat: number, lon: number, category?: string) => Promise<AgroStore[]>;
+  getStores: (lat: number, lon: number, category?: string, radiusKm?: number) => Promise<AgroStore[]>;
   getDeviceId: () => Promise<string>;
 }
 
@@ -183,9 +183,10 @@ export function LandPlannerProvider({ children }: { children: React.ReactNode })
     return await res.json() as PlantFollowup[];
   }, []);
 
-  const getStores = useCallback(async (lat: number, lon: number, category?: string): Promise<AgroStore[]> => {
+  const getStores = useCallback(async (lat: number, lon: number, category?: string, radiusKm?: number): Promise<AgroStore[]> => {
     const params = new URLSearchParams({ lat: String(lat), lon: String(lon) });
     if (category) params.set("category", category);
+    if (radiusKm) params.set("radius", String(radiusKm));
     const res = await fetch(`${API_BASE}/land/stores?${params.toString()}`);
     if (!res.ok) throw new Error("Failed to fetch stores");
     return await res.json() as AgroStore[];

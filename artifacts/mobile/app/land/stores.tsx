@@ -15,6 +15,7 @@ import {
   Text,
   View,
 } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CATEGORIES = ["All", "Seeds", "Fertilizers", "Pesticides", "Tools", "General"];
@@ -33,6 +34,8 @@ function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`;
 }
 
+const RADIUS_OPTIONS = [5, 10, 25, 50];
+
 export default function StoresScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -43,7 +46,9 @@ export default function StoresScreen() {
   const [stores, setStores] = useState<AgroStore[]>([]);
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState("All");
+  const [radiusKm, setRadiusKm] = useState(10);
   const [error, setError] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(true);
 
   const loadStores = useCallback(async () => {
     if (!location?.latitude || !location?.longitude) {
@@ -54,12 +59,12 @@ export default function StoresScreen() {
     setError(null);
     try {
       const cat = category === "All" ? undefined : category.toLowerCase();
-      const rows = await getStores(location.latitude, location.longitude, cat);
+      const rows = await getStores(location.latitude, location.longitude, cat, radiusKm);
       setStores(rows);
     } catch {
       setError("Could not load nearby stores.");
     } finally { setLoading(false); }
-  }, [location, category, getStores]);
+  }, [location, category, radiusKm, getStores]);
 
   useEffect(() => { loadStores(); }, [loadStores]);
 
@@ -72,7 +77,9 @@ export default function StoresScreen() {
           <Feather name="arrow-left" size={22} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>Nearby Agro Stores</Text>
-        <View style={{ width: 36 }} />
+        <Pressable onPress={() => setShowMap(!showMap)} style={styles.backBtn}>
+          <Feather name={showMap ? "list" : "map"} size={22} color={colors.foreground} />
+        </Pressable>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={styles.catContent}>
@@ -91,6 +98,23 @@ export default function StoresScreen() {
         ))}
       </ScrollView>
 
+      {/* Radius filter */}
+      <View style={styles.radiusRow}>
+        <Text style={[styles.radiusLabel, { color: colors.mutedForeground }]}>Within</Text>
+        {RADIUS_OPTIONS.map((r) => (
+          <Pressable
+            key={r}
+            style={[styles.radiusPill, {
+              backgroundColor: radiusKm === r ? colors.primary : colors.card,
+              borderColor: radiusKm === r ? colors.primary : colors.border,
+            }]}
+            onPress={() => { setRadiusKm(r); Haptics.selectionAsync(); }}
+          >
+            <Text style={[styles.radiusText, { color: radiusKm === r ? "#fff" : colors.foreground }]}>{r} km</Text>
+          </Pressable>
+        ))}
+      </View>
+
       {error ? (
         <View style={styles.errorCenter}>
           <MaterialCommunityIcons name="map-marker-off-outline" size={48} color={colors.mutedForeground} />
@@ -105,6 +129,39 @@ export default function StoresScreen() {
         <View style={styles.errorCenter}>
           <MaterialCommunityIcons name="store-off-outline" size={48} color={colors.mutedForeground} />
           <Text style={[styles.errorText, { color: colors.mutedForeground }]}>No agro stores found nearby.</Text>
+        </View>
+      ) : showMap ? (
+        <View style={styles.mapWrap}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: location!.latitude,
+              longitude: location!.longitude,
+              latitudeDelta: radiusKm / 55,
+              longitudeDelta: radiusKm / 55,
+            }}
+          >
+            <Marker
+              coordinate={{ latitude: location!.latitude, longitude: location!.longitude }}
+              title="You"
+              pinColor={colors.primary}
+            />
+            {filtered.map((s) => (
+              <Marker
+                key={String(s.id)}
+                coordinate={{ latitude: s.lat, longitude: s.lon }}
+                title={s.name}
+                description={`${s.category} · ${formatDistance(s.distance)}`}
+              >
+                <View style={[styles.mapPin, { backgroundColor: colors.secondary }]}>
+                  <MaterialCommunityIcons name={CAT_ICONS[s.category] as never ?? "storefront-outline"} size={14} color={colors.primary} />
+                </View>
+              </Marker>
+            ))}
+          </MapView>
+          <View style={[styles.mapOverlay, { backgroundColor: colors.background }]}>
+            <Text style={[styles.mapOverlayText, { color: colors.foreground }]}>{filtered.length} store{filtered.length !== 1 ? "s" : ""} nearby</Text>
+          </View>
         </View>
       ) : (
         <FlatList
@@ -154,15 +211,24 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },
   backBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontWeight: "700", flex: 1, textAlign: "center", marginHorizontal: 8 },
-  catScroll: { maxHeight: 48, marginTop: 12, marginBottom: 8 },
+  catScroll: { maxHeight: 48, marginTop: 12, marginBottom: 4 },
   catContent: { paddingHorizontal: 20, gap: 8, alignItems: "center" },
   catPill: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   catText: { fontSize: 13, fontWeight: "500" },
+  radiusRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 20, marginBottom: 8 },
+  radiusLabel: { fontSize: 13, fontWeight: "500" },
+  radiusPill: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14, borderWidth: 1 },
+  radiusText: { fontSize: 12, fontWeight: "600" },
   errorCenter: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 12 },
   errorText: { fontSize: 14, textAlign: "center" },
   retryBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
   retryText: { color: "#fff", fontWeight: "600" },
   listContent: { paddingHorizontal: 20, paddingBottom: 40, gap: 12, paddingTop: 4 },
+  mapWrap: { flex: 1, position: "relative" },
+  map: { flex: 1 },
+  mapPin: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  mapOverlay: { position: "absolute", bottom: 16, alignSelf: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, opacity: 0.95 },
+  mapOverlayText: { fontSize: 13, fontWeight: "600" },
   storeCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 8 },
   storeHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   storeIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },

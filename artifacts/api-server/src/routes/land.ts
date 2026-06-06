@@ -123,9 +123,12 @@ router.get("/land/stores", async (req, res) => {
     const lat = parseFloat(req.query.lat as string);
     const lon = parseFloat(req.query.lon as string);
     const category = req.query.category as string | undefined;
+    const radiusKm = parseFloat(req.query.radius as string) || 50;
     if (isNaN(lat) || isNaN(lon)) { res.status(400).json({ error: "lat and lon required" }); return; }
 
     // Haversine formula via SQL
+    const distanceExpr = sql<number>`6371 * 2 * asin(sqrt(power(sin((radians(${agroStores.lat}) - radians(${lat})) / 2), 2) + cos(radians(${lat})) * cos(radians(${agroStores.lat})) * power(sin((radians(${agroStores.lon}) - radians(${lon})) / 2), 2)))`.as("distance");
+
     let q = db.select({
       id: agroStores.id,
       name: agroStores.name,
@@ -137,14 +140,16 @@ router.get("/land/stores", async (req, res) => {
       lat: agroStores.lat,
       lon: agroStores.lon,
       products: agroStores.products,
-      distance: sql<number>`6371 * 2 * asin(sqrt(power(sin((radians(${agroStores.lat}) - radians(${lat})) / 2), 2) + cos(radians(${lat})) * cos(radians(${agroStores.lat})) * power(sin((radians(${agroStores.lon}) - radians(${lon})) / 2), 2)))`.as("distance"),
+      distance: distanceExpr,
     }).from(agroStores);
 
+    const conditions = [sql`${distanceExpr} <= ${radiusKm}`];
     if (category) {
-      q = q.where(sql`${agroStores.category} ILIKE ${`%${category}%`}`) as typeof q;
+      conditions.push(sql`${agroStores.category} ILIKE ${`%${category}%`}`);
     }
+    q = q.where(sql`${conditions.join(" AND ")}`) as typeof q;
 
-    const rows = await q.orderBy(sql`distance`).limit(20);
+    const rows = await q.orderBy(sql`distance`).limit(50);
     res.json(rows);
   } catch (err) { req.log.error({ err }, "land/stores GET error"); res.status(500).json({ error: "Failed to fetch stores" }); }
 });

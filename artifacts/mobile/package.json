@@ -58,6 +58,7 @@
   "dependencies": {
     "expo-clipboard": "^56.0.4",
     "expo-notifications": "^56.0.16",
-    "expo-sharing": "^56.0.16"
+    "expo-sharing": "^56.0.16",
+    "react-native-maps": "^1.27.2"
   }
 }
