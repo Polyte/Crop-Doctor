@@ -57,7 +57,7 @@ export default function HomeScreen() {
           styles.heroCard,
           { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 },
         ]}
-        onPress={() => router.push("/(tabs)/scan")}
+        onPress={() => router.push("/(tabs)/diagnose")}
       >
         <View style={styles.heroContent}>
           <Text style={styles.heroLabel}>AI-Powered Diagnosis</Text>
@@ -98,7 +98,7 @@ export default function HomeScreen() {
               styles.quickCard,
               { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
             ]}
-            onPress={() => router.push({ pathname: "/(tabs)/scan", params: { type: "crop" } })}
+            onPress={() => router.push({ pathname: "/(tabs)/diagnose", params: { type: "crop" } })}
           >
             <View style={[styles.quickIcon, { backgroundColor: colors.secondary }]}>
               <MaterialCommunityIcons name="sprout" size={28} color={colors.primary} />
@@ -113,7 +113,7 @@ export default function HomeScreen() {
               styles.quickCard,
               { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
             ]}
-            onPress={() => router.push({ pathname: "/(tabs)/scan", params: { type: "livestock" } })}
+            onPress={() => router.push({ pathname: "/(tabs)/diagnose", params: { type: "livestock" } })}
           >
             <View style={[styles.quickIcon, { backgroundColor: "#FFF3E0" }]}>
               <MaterialCommunityIcons name="cow" size={28} color="#E65100" />

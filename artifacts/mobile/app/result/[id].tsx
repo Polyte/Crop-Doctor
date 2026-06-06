@@ -178,7 +178,7 @@ export default function ResultScreen() {
             styles.newScanBtn,
             { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 },
           ]}
-          onPress={() => router.push("/(tabs)/scan")}
+          onPress={() => router.push("/(tabs)/diagnose")}
         >
           <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
           <Text style={styles.newScanText}>New Diagnosis</Text>

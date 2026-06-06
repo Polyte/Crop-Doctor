@@ -16,7 +16,7 @@ function NativeTabLayout() {
         <Icon sf={{ default: "house", selected: "house.fill" }} />
         <Label>Home</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="scan">
+      <NativeTabs.Trigger name="diagnose">
         <Icon sf={{ default: "camera", selected: "camera.fill" }} />
         <Label>Diagnose</Label>
       </NativeTabs.Trigger>
@@ -85,7 +85,7 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="scan"
+        name="diagnose"
         options={{
           title: "Diagnose",
           tabBarIcon: ({ color }) =>

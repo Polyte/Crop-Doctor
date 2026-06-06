@@ -126,7 +126,7 @@ export default function PlantDetailScreen() {
               <Feather name="check-circle" size={16} color="#fff" />
               <Text style={styles.heroBtnText}>Log Follow-up</Text>
             </Pressable>
-            <Pressable style={[styles.heroBtnOutline, { borderColor: colors.primary }]} onPress={() => { router.push({ pathname: "/scan", params: { type: "crop", plantId: String(plant.id) } }); }}>
+            <Pressable style={[styles.heroBtnOutline, { borderColor: colors.primary }]} onPress={() => { router.push({ pathname: "/(tabs)/diagnose", params: { type: "crop", plantId: String(plant.id) } }); }}>
               <MaterialCommunityIcons name="brain" size={16} color={colors.primary} />
               <Text style={[styles.heroBtnOutlineText, { color: colors.primary }]}>AI Diagnose</Text>
             </Pressable>
