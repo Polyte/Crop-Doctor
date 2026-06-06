@@ -71,9 +71,16 @@ Do not include any text outside the JSON object.`;
 
     const responseText = message.content[0].type === "text" ? message.content[0].text : "";
 
+    // Strip markdown code fences (Claude sometimes wraps JSON in ```json ... ```)
+    const cleanText = responseText
+      .replace(/^```json\s*/, "")
+      .replace(/^```\s*/, "")
+      .replace(/\s*```\s*$/, "")
+      .trim();
+
     let diagnosisResult;
     try {
-      diagnosisResult = JSON.parse(responseText);
+      diagnosisResult = JSON.parse(cleanText);
     } catch {
       diagnosisResult = {
         condition: "Unable to diagnose",
