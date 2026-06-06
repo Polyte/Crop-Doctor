@@ -22,9 +22,13 @@ router.post("/diagnose", async (req, res) => {
       ? `crop${cropType ? ` (${cropType})` : ""}`
       : `livestock${livestockType ? ` (${livestockType})` : ""}`;
 
-    const systemPrompt = `You are Farmguard AI, an expert agricultural diagnostician helping farmers identify issues with their ${subjectType === "crop" ? "crops" : "livestock"}. 
-    
-You analyze descriptions and images to identify diseases, pests, nutritional deficiencies, or health conditions.
+    const { lang = "en" } = req.body as { lang?: string };
+    const isSwahili = lang === "sw";
+
+    const systemPrompt = `You are Farmguard AI, an expert agricultural diagnostician helping farmers identify issues with their ${subjectType === "crop" ? "crops" : "livestock"}.
+
+${isSwahili ? "IMPORTANT: Respond ENTIRELY in Swahili (Kiswahili). All fields in the JSON must be in Swahili." : "You analyze descriptions and images to identify diseases, pests, nutritional deficiencies, or health conditions."}
+
 Always respond with a valid JSON object in exactly this format:
 {
   "condition": "Name of the condition or disease",
@@ -37,7 +41,7 @@ Always respond with a valid JSON object in exactly this format:
   "prevention": ["prevention tip 1", "prevention tip 2", ...],
   "urgency": "Brief urgency statement for the farmer"
 }
-Do not include any text outside the JSON object.`;
+Do not include any text outside the JSON object. ${isSwahili ? "ALL values must be in Swahili." : ""}`;
 
     const userContent: Parameters<typeof anthropic.messages.create>[0]["messages"][0]["content"] = [];
 
@@ -52,9 +56,13 @@ Do not include any text outside the JSON object.`;
       });
     }
 
+    const userMessage = isSwahili
+      ? `Tafadhali chunguza shida hii ya ${subjectLabel}.\n\nMaelezo ya mkulima: ${description}`
+      : `Please diagnose this ${subjectLabel} issue.\n\nFarmer's description: ${description}`;
+
     userContent.push({
       type: "text",
-      text: `Please diagnose this ${subjectLabel} issue.\n\nFarmer's description: ${description}`,
+      text: userMessage,
     });
 
     const message = await anthropic.messages.create({

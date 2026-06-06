@@ -1,5 +1,6 @@
 import Head from "expo-router/head";
 import { useMarket, type FarmerProfile, type ListingWithFarmer, type Listing } from "@/context/MarketContext";
+import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -523,6 +524,8 @@ export default function MarketScreen() {
     fetchShopListings();
   }, [fetchShopListings]);
 
+  const [sortBy, setSortBy] = useState<"newest" | "price-low" | "price-high">("newest");
+
   const filteredListings = shopListings.filter((l) => {
     const matchCat = category === "All" || l.category === category;
     const matchSearch =
@@ -531,6 +534,10 @@ export default function MarketScreen() {
       (l.farmerLocation ?? "").toLowerCase().includes(search.toLowerCase()) ||
       (l.farmName ?? "").toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
+  }).sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    return (new Date(b.createdAt ?? 0).getTime() || 0) - (new Date(a.createdAt ?? 0).getTime() || 0);
   });
 
   const handleDeleteListing = (id: number) => {
@@ -561,7 +568,9 @@ export default function MarketScreen() {
             Fresh produce, direct from farmers
           </Text>
         </View>
-        <MaterialCommunityIcons name="storefront" size={28} color={colors.primary} />
+        <Pressable onPress={() => router.push("/settings")} style={{ padding: 8 }}>
+          <MaterialCommunityIcons name="cog-outline" size={24} color={colors.mutedForeground} />
+        </Pressable>
       </View>
 
       {/* Tab toggle */}
@@ -602,6 +611,27 @@ export default function MarketScreen() {
                 <Feather name="x" size={14} color={colors.mutedForeground} />
               </Pressable>
             ) : null}
+          </View>
+
+          {/* Sort by */}
+          <View style={styles.sortRow}>
+            {(["newest", "price-low", "price-high"] as const).map((s) => (
+              <Pressable
+                key={s}
+                style={[
+                  styles.sortPill,
+                  {
+                    backgroundColor: sortBy === s ? colors.primary : colors.card,
+                    borderColor: sortBy === s ? colors.primary : colors.border,
+                  },
+                ]}
+                onPress={() => { setSortBy(s); Haptics.selectionAsync(); }}
+              >
+                <Text style={[styles.sortPillText, { color: sortBy === s ? "#fff" : colors.foreground }]}>
+                  {s === "newest" ? "Newest" : s === "price-low" ? "Price: Low" : "Price: High"}
+                </Text>
+              </Pressable>
+            ))}
           </View>
 
           {/* Category pills */}
@@ -756,6 +786,9 @@ const styles = StyleSheet.create({
   ctaBtnText: { color: "#fff", fontWeight: "600", fontSize: 15 },
   ctaBtnOutline: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 2 },
   ctaBtnOutlineText: { fontWeight: "600", fontSize: 15 },
+  sortRow: { flexDirection: "row", gap: 8, marginHorizontal: 20, marginBottom: 10 },
+  sortPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
+  sortPillText: { fontSize: 12, fontWeight: "500" },
   // My Farm
   registerCta: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 16 },
   registerIcon: { width: 100, height: 100, borderRadius: 50, alignItems: "center", justifyContent: "center" },

@@ -5,11 +5,12 @@ const router = Router();
 
 router.post("/grow-plan", async (req, res) => {
   try {
-    const { cropName, location, season, hemisphere } = req.body as {
+    const { cropName, location, season, hemisphere, lang = "en" } = req.body as {
       cropName: string;
       location: string;
       season: string;
       hemisphere: string;
+      lang?: string;
     };
 
     if (!cropName || !season || !hemisphere) {
@@ -17,25 +18,28 @@ router.post("/grow-plan", async (req, res) => {
       return;
     }
 
+    const isSwahili = lang === "sw";
+
     const systemPrompt = `You are Farmguard AI, an expert agronomist and biodynamic farming advisor.
-Generate a detailed, practical growing plan for a specific crop considering the season, hemisphere, and moon gardening principles.
+
+${isSwahili ? "IMPORTANT: Respond ENTIRELY in Swahili (Kiswahili). All JSON fields must be in Swahili." : "Generate a detailed, practical growing plan for a specific crop considering the season, hemisphere, and moon gardening principles."}
 
 ALWAYS respond with a valid JSON object in exactly this format:
 {
   "totalDays": <number, total days from soil prep to harvest>,
   "phases": [
     {
-      "name": "<phase name, e.g. Soil Preparation, Sowing, Germination, Vegetative Growth, Flowering/Fruiting, Harvest>",
+      "name": "<phase name>",
       "startDay": <day number>,
       "endDay": <day number>,
-      "activities": ["<specific activity 1>", "<specific activity 2>", ...],
-      "moonAdvice": "<specific moon phase advice for this phase>",
+      "activities": ["<specific activity 1>", ...],
+      "moonAdvice": "<specific moon phase advice>",
       "bestMoonPhases": ["<moon phase name>", ...],
-      "tips": ["<practical tip 1>", "<practical tip 2>", ...]
+      "tips": ["<practical tip 1>", ...]
     }
   ],
   "moonGuide": {
-    "New Moon": "<what to do with this crop during new moon>",
+    "New Moon": "<what to do>",
     "Waxing Crescent": "<what to do>",
     "First Quarter": "<what to do>",
     "Waxing Gibbous": "<what to do>",
@@ -44,15 +48,13 @@ ALWAYS respond with a valid JSON object in exactly this format:
     "Last Quarter": "<what to do>",
     "Waning Crescent": "<what to do>"
   },
-  "generalTips": ["<important tip 1>", "<important tip 2>", "<important tip 3>", "<tip 4>", "<tip 5>"]
+  "generalTips": ["<tip 1>", ...]
 }
-Do not include any text outside the JSON object. Be specific, practical, and tailored to the location/season.`;
+Do not include any text outside the JSON object. ${isSwahili ? "ALL values must be in Swahili." : "Be specific, practical, and tailored to the location/season."}`;
 
-    const userMessage = `Create a detailed growing plan for: ${cropName}
-Location: ${location}
-Current season: ${season} (${hemisphere} hemisphere)
-
-Include 5-7 phases from soil preparation to harvest, moon phase guidance for each phase, and practical tips specific to this crop and season.`;
+    const userMessage = isSwahili
+      ? `Tengeneza mpango wa ukuaji kwa: ${cropName}\nEneo: ${location}\nMajira ya sasa: ${season} (${hemisphere} hemisphere)\n\nJumuisha awamu 5-7 kutoka kuandaa udongo hadi kuvuna, ushauri wa mwezi kwa kila awamu, na vidokezo vya vitendo.`
+      : `Create a detailed growing plan for: ${cropName}\nLocation: ${location}\nCurrent season: ${season} (${hemisphere} hemisphere)\n\nInclude 5-7 phases from soil preparation to harvest, moon phase guidance for each phase, and practical tips specific to this crop and season.`;
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",

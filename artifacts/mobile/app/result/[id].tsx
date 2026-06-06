@@ -4,10 +4,12 @@ import { useColors } from "@/hooks/useColors";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
+  Clipboard,
   Image,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -47,6 +49,7 @@ export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { diagnoses, deleteDiagnosis } = useDiagnosis();
   const router = useRouter();
+  const [showShare, setShowShare] = useState(false);
 
   const record: DiagnosisRecord | undefined = useMemo(
     () => diagnoses.find(d => d.id === id),
@@ -103,9 +106,14 @@ export default function ResultScreen() {
         options={{
           title: "Diagnosis Result",
           headerRight: () => (
-            <Pressable onPress={handleDelete} style={{ padding: 8 }}>
-              <Feather name="trash-2" size={20} color={colors.destructive} />
-            </Pressable>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <Pressable onPress={() => setShowShare(true)} style={{ padding: 8 }}>
+                <Feather name="share-2" size={20} color={colors.primary} />
+              </Pressable>
+              <Pressable onPress={handleDelete} style={{ padding: 8 }}>
+                <Feather name="trash-2" size={20} color={colors.destructive} />
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -183,10 +191,178 @@ export default function ResultScreen() {
           <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
           <Text style={styles.newScanText}>New Diagnosis</Text>
         </Pressable>
+
+        {/* Share Modal */}
+        <ShareModal
+          visible={showShare}
+          onClose={() => setShowShare(false)}
+          record={record}
+          colors={colors}
+        />
       </ScrollView>
     </>
   );
 }
+
+// ─── Share Modal ───────────────────────────────────────────────────────
+function ShareModal({
+  visible,
+  onClose,
+  record,
+  colors,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  record: DiagnosisRecord;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const shareText = `✨ Farmguard Diagnosis
+
+Condition: ${record.condition}
+Severity: ${record.severity}
+Confidence: ${record.confidence}
+
+Summary:
+${record.summary}
+
+Symptoms:
+${record.symptoms.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+Treatments:
+${record.treatments.map((t, i) => `${i + 1}. ${t}`).join("\n")}
+
+Prevention:
+${record.prevention.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Urgency: ${record.urgency}
+
+---
+Shared from Farmguard - AI Farm Diagnosis
+`.trim();
+
+  const handleCopy = () => {
+    Clipboard.setString(shareText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    const text = encodeURIComponent(shareText);
+    const url = `https://wa.me/?text=${text}`;
+    if (Platform.OS !== "web") {
+      const { Linking } = require("react-native");
+      Linking.openURL(url);
+    } else {
+      window.open(url, "_blank");
+    }
+    onClose();
+  };
+
+  const handleSMS = () => {
+    const text = encodeURIComponent(shareText.slice(0, 500));
+    const url = `sms:?&body=${text}`;
+    if (Platform.OS !== "web") {
+      const { Linking } = require("react-native");
+      Linking.openURL(url);
+    } else {
+      window.open(url, "_blank");
+    }
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" transparent onRequestClose={onClose}>
+      <View style={shareStyles.overlay}>
+        <View style={[shareStyles.sheet, { backgroundColor: colors.background }]}>
+          <View style={[shareStyles.handle, { backgroundColor: colors.border }]} />
+          <Text style={[shareStyles.title, { color: colors.foreground }]}>Share Diagnosis</Text>
+
+          <Pressable
+            style={[shareStyles.btn, { backgroundColor: colors.primary }]}
+            onPress={handleWhatsApp}
+          >
+            <MaterialCommunityIcons name="whatsapp" size={22} color="#fff" />
+            <Text style={shareStyles.btnText}>Share via WhatsApp</Text>
+          </Pressable>
+
+          <Pressable
+            style={[shareStyles.btn, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}
+            onPress={handleSMS}
+          >
+            <Feather name="message-square" size={20} color={colors.foreground} />
+            <Text style={[shareStyles.btnTextAlt, { color: colors.foreground }]}>Share via SMS</Text>
+          </Pressable>
+
+          <Pressable
+            style={[shareStyles.btn, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}
+            onPress={handleCopy}
+          >
+            <Feather name="copy" size={20} color={colors.foreground} />
+            <Text style={[shareStyles.btnTextAlt, { color: colors.foreground }]}>
+              {copied ? "Copied!" : "Copy to Clipboard"}
+            </Text>
+          </Pressable>
+
+          <Pressable onPress={onClose} style={{ marginTop: 8, padding: 12 }}>
+            <Text style={[shareStyles.cancel, { color: colors.mutedForeground }]}>Cancel</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const shareStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  sheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+    gap: 12,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  btn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 16,
+    borderRadius: 14,
+    justifyContent: "center",
+  },
+  btnText: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    color: "#fff",
+  },
+  btnTextAlt: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+  },
+  cancel: {
+    fontSize: 15,
+    fontFamily: "Inter_500Medium",
+    textAlign: "center",
+  },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

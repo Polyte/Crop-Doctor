@@ -1,6 +1,8 @@
 import { MoonPhaseIcon } from "@/components/MoonPhaseIcon";
 import { GrowPlan, useGrowPlan } from "@/context/GrowPlanContext";
 import { useLocation } from "@/context/LocationContext";
+import { useI18n } from "@/context/LanguageContext";
+import { useNotifications } from "@/context/NotificationContext";
 import { useColors } from "@/hooks/useColors";
 import { getMoonPhase, getNextMoonEvents } from "@/utils/moonPhase";
 import { getSeason, getSeasonCropRecommendations } from "@/utils/season";
@@ -25,6 +27,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PlannerScreen() {
   const colors = useColors();
+  const { t } = useI18n();
+  const { scheduleReminder } = useNotifications();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { location, setLocation, clearLocation, loading: locationLoading } = useLocation();
@@ -132,9 +136,16 @@ export default function PlannerScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.push({ pathname: "/grow-plan/[id]", params: { id } });
       setSelectedCrop(null);
+
+      // Schedule reminder for start date
+      await scheduleReminder(
+        t("grow.plan.reminder"),
+        `${t("plant")} ${selectedCrop} ${t("starting.today")}!`,
+        3600,
+      );
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", "Could not generate grow plan. Please try again.");
+      Alert.alert(t("error"), t("grow.plan.error"));
     } finally {
       setGenerating(false);
     }

@@ -1,4 +1,5 @@
 import { useDiagnosis } from "@/context/DiagnosisContext";
+import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -28,6 +29,7 @@ const LIVESTOCK_TYPES = ["Cattle", "Goat", "Sheep", "Chicken", "Pig", "Rabbit", 
 
 export default function ScanScreen() {
   const colors = useColors();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { addDiagnosis } = useDiagnosis();
@@ -92,6 +94,7 @@ export default function ScanScreen() {
       const body: Record<string, string> = {
         description: description.trim() || "No description provided",
         subjectType,
+        lang: t("app.name") === "Farmguard" ? "en" : "sw",
       };
       if (subjectType === "crop" && subjectVariety) body.cropType = subjectVariety;
       if (subjectType === "livestock" && subjectVariety) body.livestockType = subjectVariety;

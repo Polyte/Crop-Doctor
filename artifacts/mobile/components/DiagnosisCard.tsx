@@ -1,4 +1,5 @@
 import { DiagnosisRecord } from "@/context/DiagnosisContext";
+import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -8,6 +9,7 @@ import { SeverityBadge } from "./SeverityBadge";
 
 interface Props {
   record: DiagnosisRecord;
+  isOffline?: boolean;
 }
 
 function formatTime(ts: string) {
@@ -21,8 +23,9 @@ function formatTime(ts: string) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function DiagnosisCard({ record }: Props) {
+export function DiagnosisCard({ record, isOffline }: Props) {
   const colors = useColors();
+  const { t } = useI18n();
   const router = useRouter();
 
   const subjectLabel = record.subjectType === "crop"
@@ -58,9 +61,17 @@ export function DiagnosisCard({ record }: Props) {
             <Text style={[styles.condition, { color: colors.foreground }]} numberOfLines={1}>
               {record.condition}
             </Text>
-            <Text style={[styles.time, { color: colors.mutedForeground }]}>
-              {formatTime(record.timestamp)}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              {isOffline && (
+                <View style={[styles.offlineBadge, { backgroundColor: colors.secondary }]}>
+                  <MaterialCommunityIcons name="cloud-off-outline" size={10} color={colors.mutedForeground} />
+                  <Text style={[styles.offlineText, { color: colors.mutedForeground }]}>{t("offline.saved")}</Text>
+                </View>
+              )}
+              <Text style={[styles.time, { color: colors.mutedForeground }]}>
+                {formatTime(record.timestamp)}
+              </Text>
+            </View>
           </View>
           <Text style={[styles.subject, { color: colors.mutedForeground }]}>
             {subjectLabel}
@@ -124,5 +135,17 @@ const styles = StyleSheet.create({
   },
   bottomRow: {
     marginTop: 4,
+  },
+  offlineBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  offlineText: {
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
   },
 });

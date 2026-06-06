@@ -19,6 +19,9 @@ import { GrowPlanProvider } from "@/context/GrowPlanContext";
 import { LandPlannerProvider } from "@/context/LandPlannerContext";
 import { LocationProvider } from "@/context/LocationContext";
 import { MarketProvider } from "@/context/MarketContext";
+import { I18nProvider } from "@/context/LanguageContext";
+import { WeatherProvider } from "@/context/WeatherContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import { setBaseUrl } from "@workspace/api-client-react";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -62,21 +65,27 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <LocationProvider>
-            <LandPlannerProvider>
-              <MarketProvider>
-                <GrowPlanProvider>
-                  <DiagnosisProvider>
-                    <GestureHandlerRootView>
-                      <KeyboardProvider>
-                        <RootLayoutNav />
-                      </KeyboardProvider>
-                    </GestureHandlerRootView>
-                  </DiagnosisProvider>
-                </GrowPlanProvider>
-              </MarketProvider>
-            </LandPlannerProvider>
-          </LocationProvider>
+          <I18nProvider>
+            <LocationProvider>
+              <WeatherProvider>
+                <LandPlannerProvider>
+                  <MarketProvider>
+                    <GrowPlanProvider>
+                      <DiagnosisProvider>
+                        <NotificationProvider>
+                          <GestureHandlerRootView>
+                            <KeyboardProvider>
+                              <RootLayoutNav />
+                            </KeyboardProvider>
+                          </GestureHandlerRootView>
+                        </NotificationProvider>
+                      </DiagnosisProvider>
+                    </GrowPlanProvider>
+                  </MarketProvider>
+                </LandPlannerProvider>
+              </WeatherProvider>
+            </LocationProvider>
+          </I18nProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

@@ -1,4 +1,5 @@
 import { useLandPlanner, type LandPlot } from "@/context/LandPlannerContext";
+import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -10,6 +11,7 @@ import Svg, { Polygon } from "react-native-svg";
 
 export default function LandScreen() {
   const colors = useColors();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { plots, loadingPlots } = useLandPlanner();
@@ -18,9 +20,9 @@ export default function LandScreen() {
     <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>My Land</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t("my.land")}</Text>
           <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
-            Design your plot, place plants, track health
+            {t("land.subtitle")}
           </Text>
         </View>
         <MaterialCommunityIcons name="map-marker-multiple-outline" size={28} color={colors.primary} />
@@ -32,14 +34,14 @@ export default function LandScreen() {
           onPress={() => { router.push("/land/plot-creator"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
         >
           <MaterialCommunityIcons name="map-plus" size={24} color="#fff" />
-          <Text style={styles.quickCardText}>Create Plot</Text>
+          <Text style={styles.quickCardText}>{t("create.plot")}</Text>
         </Pressable>
         <Pressable
           style={[styles.quickCard, { backgroundColor: colors.secondary }]}
           onPress={() => { router.push("/land/stores"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
         >
           <MaterialCommunityIcons name="store-marker" size={24} color={colors.primary} />
-          <Text style={[styles.quickCardTextAlt, { color: colors.primary }]}>Agro Stores</Text>
+          <Text style={[styles.quickCardTextAlt, { color: colors.primary }]}>{t("agro.stores")}</Text>
         </Pressable>
       </View>
 

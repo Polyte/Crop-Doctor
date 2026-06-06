@@ -1,5 +1,6 @@
 import { DiagnosisCard } from "@/components/DiagnosisCard";
 import { useDiagnosis } from "@/context/DiagnosisContext";
+import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Head from "expo-router/head";
@@ -19,6 +20,7 @@ type Filter = "all" | "crop" | "livestock";
 
 export default function HistoryScreen() {
   const colors = useColors();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const { diagnoses, clearAll } = useDiagnosis();
   const [filter, setFilter] = useState<Filter>("all");
@@ -30,11 +32,11 @@ export default function HistoryScreen() {
 
   function handleClearAll() {
     Alert.alert(
-      "Clear History",
-      "Are you sure you want to delete all diagnosis records?",
+      t("clear.history"),
+      t("clear.history.confirm"),
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete All", style: "destructive", onPress: clearAll },
+        { text: t("cancel"), style: "cancel" },
+        { text: t("delete.all"), style: "destructive", onPress: clearAll },
       ]
     );
   }
@@ -42,7 +44,7 @@ export default function HistoryScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Head>
-        <title>Diagnosis History — Farmguard</title>
+        <title>{t("diagnosis.history")}</title>
         <meta name="description" content="Review your past crop and livestock AI diagnoses. Track conditions over time and revisit treatment recommendations." />
       </Head>
       {/* Filter bar */}
@@ -75,7 +77,7 @@ export default function HistoryScreen() {
                   { color: filter === f ? "#FFFFFF" : colors.mutedForeground },
                 ]}
               >
-                {f === "all" ? "All" : f === "crop" ? "Crops" : "Livestock"}
+                {f === "all" ? t("all") : f === "crop" ? t("crops") : t("livestock")}
               </Text>
             </Pressable>
           ))}
@@ -105,10 +107,10 @@ export default function HistoryScreen() {
               color={colors.mutedForeground}
             />
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              {filter === "all" ? "No diagnoses yet" : `No ${filter} diagnoses yet`}
+              {filter === "all" ? t("no.diagnoses") : t("no.filter.diagnoses")}
             </Text>
             <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              Your diagnosis history will appear here
+              {t("history.appears.here")}
             </Text>
           </View>
         }

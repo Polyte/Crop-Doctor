@@ -1,5 +1,7 @@
 import { DiagnosisCard } from "@/components/DiagnosisCard";
+import { WeatherWidget } from "@/components/WeatherWidget";
 import { useDiagnosis } from "@/context/DiagnosisContext";
+import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Head from "expo-router/head";
@@ -17,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const colors = useColors();
+  const { t } = useI18n();
   const { diagnoses, loading } = useDiagnosis();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -43,13 +46,16 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>Welcome back</Text>
-          <Text style={[styles.title, { color: colors.foreground }]}>Farmguard</Text>
+          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>{t("welcome.back")}</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>{t("app.name")}</Text>
         </View>
         <View style={[styles.logoBox, { backgroundColor: colors.primary }]}>
           <MaterialCommunityIcons name="shield-check" size={28} color="#FFFFFF" />
         </View>
       </View>
+
+      {/* Weather Widget */}
+      <WeatherWidget />
 
       {/* Hero CTA */}
       <Pressable
@@ -60,13 +66,13 @@ export default function HomeScreen() {
         onPress={() => router.push("/(tabs)/diagnose")}
       >
         <View style={styles.heroContent}>
-          <Text style={styles.heroLabel}>AI-Powered Diagnosis</Text>
-          <Text style={styles.heroTitle}>Scan Your Farm</Text>
+          <Text style={styles.heroLabel}>{t("ai.diagnosis")}</Text>
+          <Text style={styles.heroTitle}>{t("scan.farm")}</Text>
           <Text style={styles.heroSub}>
-            Take a photo or describe symptoms to identify diseases, pests, and conditions
+            {t("scan.desc")}
           </Text>
           <View style={[styles.heroBtn, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
-            <Text style={styles.heroBtnText}>Start Diagnosis</Text>
+            <Text style={styles.heroBtnText}>{t("start.diagnosis")}</Text>
             <MaterialCommunityIcons name="arrow-right" size={18} color="#FFFFFF" />
           </View>
         </View>
@@ -77,21 +83,21 @@ export default function HomeScreen() {
       <View style={styles.statsRow}>
         <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.statNum, { color: colors.foreground }]}>{totalCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Total Scans</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("total.scans")}</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.statNum, { color: colors.severityHigh }]}>{highCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>High Risk</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("high.risk")}</Text>
         </View>
         <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.statNum, { color: colors.severityCritical }]}>{criticalCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Critical</Text>
+          <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{t("critical")}</Text>
         </View>
       </View>
 
       {/* Quick Actions */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Diagnose</Text>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("quick.diagnose")}</Text>
         <View style={styles.quickRow}>
           <Pressable
             style={({ pressed }) => [
@@ -103,9 +109,9 @@ export default function HomeScreen() {
             <View style={[styles.quickIcon, { backgroundColor: colors.secondary }]}>
               <MaterialCommunityIcons name="sprout" size={28} color={colors.primary} />
             </View>
-            <Text style={[styles.quickLabel, { color: colors.foreground }]}>Crop Issue</Text>
+            <Text style={[styles.quickLabel, { color: colors.foreground }]}>{t("crop.issue")}</Text>
             <Text style={[styles.quickSub, { color: colors.mutedForeground }]}>
-              Diseases, pests, deficiencies
+              {t("crop.desc")}
             </Text>
           </Pressable>
           <Pressable
@@ -118,9 +124,9 @@ export default function HomeScreen() {
             <View style={[styles.quickIcon, { backgroundColor: "#FFF3E0" }]}>
               <MaterialCommunityIcons name="cow" size={28} color="#E65100" />
             </View>
-            <Text style={[styles.quickLabel, { color: colors.foreground }]}>Livestock Issue</Text>
+            <Text style={[styles.quickLabel, { color: colors.foreground }]}>{t("livestock.issue")}</Text>
             <Text style={[styles.quickSub, { color: colors.mutedForeground }]}>
-              Health conditions, injuries
+              {t("livestock.desc")}
             </Text>
           </Pressable>
         </View>
@@ -130,9 +136,9 @@ export default function HomeScreen() {
       {recent.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Recent Diagnoses</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("recent.diagnoses")}</Text>
             <Pressable onPress={() => router.push("/(tabs)/history")}>
-              <Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text>
+              <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see.all")}</Text>
             </Pressable>
           </View>
           {recent.map(d => (
@@ -144,9 +150,9 @@ export default function HomeScreen() {
       {diagnoses.length === 0 && !loading && (
         <View style={[styles.emptyState, { borderColor: colors.border, backgroundColor: colors.card }]}>
           <MaterialCommunityIcons name="leaf-circle-outline" size={48} color={colors.mutedForeground} />
-          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No diagnoses yet</Text>
+          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("no.diagnoses")}</Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            Tap "Start Diagnosis" to scan your first crop or livestock
+            {t("no.diagnoses.desc")}
           </Text>
         </View>
       )}
