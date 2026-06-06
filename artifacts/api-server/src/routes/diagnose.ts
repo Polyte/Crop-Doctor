@@ -13,8 +13,8 @@ router.post("/diagnose", async (req, res) => {
       livestockType?: string;
     };
 
-    if (!description || !subjectType) {
-      res.status(400).json({ error: "description and subjectType are required" });
+    if (!subjectType) {
+      res.status(400).json({ error: "subjectType is required" });
       return;
     }
 

@@ -83,20 +83,14 @@ export default function ScanScreen() {
   }
 
   async function handleDiagnose() {
-    if (!description.trim()) {
-      Alert.alert("Description needed", "Please describe what you are seeing with your crop or livestock.");
-      return;
-    }
-
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
 
     try {
-      const domain = process.env.EXPO_PUBLIC_DOMAIN;
-      const baseUrl = domain ? `https://${domain}` : "";
+      const baseUrl = `https://${process.env.EXPO_PUBLIC_DOMAIN}`;
 
       const body: Record<string, string> = {
-        description: description.trim(),
+        description: description.trim() || "No description provided",
         subjectType,
       };
       if (subjectType === "crop" && subjectVariety) body.cropType = subjectVariety;
@@ -277,7 +271,7 @@ export default function ScanScreen() {
 
       {/* Description */}
       <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.foreground }]}>Describe the problem *</Text>
+        <Text style={[styles.label, { color: colors.foreground }]}>Describe the problem (optional)</Text>
         <TextInput
           style={[
             styles.textArea,
