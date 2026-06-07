@@ -15,7 +15,6 @@ import {
   Text,
   View,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CATEGORIES = ["All", "Seeds", "Fertilizers", "Pesticides", "Tools", "General"];
@@ -48,7 +47,6 @@ export default function StoresScreen() {
   const [category, setCategory] = useState("All");
   const [radiusKm, setRadiusKm] = useState(10);
   const [error, setError] = useState<string | null>(null);
-  const [showMap, setShowMap] = useState(true);
 
   const loadStores = useCallback(async () => {
     if (!location?.latitude || !location?.longitude) {
@@ -77,8 +75,15 @@ export default function StoresScreen() {
           <Feather name="arrow-left" size={22} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>Nearby Agro Stores</Text>
-        <Pressable onPress={() => setShowMap(!showMap)} style={styles.backBtn}>
-          <Feather name={showMap ? "list" : "map"} size={22} color={colors.foreground} />
+        <Pressable
+          onPress={() => {
+            if (location?.latitude && location?.longitude) {
+              Linking.openURL(`https://www.google.com/maps/search/agro+store/@${location.latitude},${location.longitude},13z`);
+            }
+          }}
+          style={styles.backBtn}
+        >
+          <Feather name="map" size={22} color={colors.foreground} />
         </Pressable>
       </View>
 
@@ -129,39 +134,6 @@ export default function StoresScreen() {
         <View style={styles.errorCenter}>
           <MaterialCommunityIcons name="store-off-outline" size={48} color={colors.mutedForeground} />
           <Text style={[styles.errorText, { color: colors.mutedForeground }]}>No agro stores found nearby.</Text>
-        </View>
-      ) : showMap ? (
-        <View style={styles.mapWrap}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: location!.latitude,
-              longitude: location!.longitude,
-              latitudeDelta: radiusKm / 55,
-              longitudeDelta: radiusKm / 55,
-            }}
-          >
-            <Marker
-              coordinate={{ latitude: location!.latitude, longitude: location!.longitude }}
-              title="You"
-              pinColor={colors.primary}
-            />
-            {filtered.map((s) => (
-              <Marker
-                key={String(s.id)}
-                coordinate={{ latitude: s.lat, longitude: s.lon }}
-                title={s.name}
-                description={`${s.category} · ${formatDistance(s.distance)}`}
-              >
-                <View style={[styles.mapPin, { backgroundColor: colors.secondary }]}>
-                  <MaterialCommunityIcons name={CAT_ICONS[s.category] as never ?? "storefront-outline"} size={14} color={colors.primary} />
-                </View>
-              </Marker>
-            ))}
-          </MapView>
-          <View style={[styles.mapOverlay, { backgroundColor: colors.background }]}>
-            <Text style={[styles.mapOverlayText, { color: colors.foreground }]}>{filtered.length} store{filtered.length !== 1 ? "s" : ""} nearby</Text>
-          </View>
         </View>
       ) : (
         <FlatList
@@ -224,11 +196,6 @@ const styles = StyleSheet.create({
   retryBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
   retryText: { color: "#fff", fontWeight: "600" },
   listContent: { paddingHorizontal: 20, paddingBottom: 40, gap: 12, paddingTop: 4 },
-  mapWrap: { flex: 1, position: "relative" },
-  map: { flex: 1 },
-  mapPin: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  mapOverlay: { position: "absolute", bottom: 16, alignSelf: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, opacity: 0.95 },
-  mapOverlayText: { fontSize: 13, fontWeight: "600" },
   storeCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 8 },
   storeHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   storeIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },

@@ -76,13 +76,13 @@ export default function RootLayout() {
                     <GrowPlanProvider>
                       <DiagnosisProvider>
                         <PriceAlertsProvider>
-                        <NotificationProvider>
-                          <GestureHandlerRootView>
-                            <KeyboardProvider>
-                              <RootLayoutNav />
-                            </KeyboardProvider>
-                          </GestureHandlerRootView>
-                        </NotificationProvider>
+                          <NotificationProvider>
+                            <GestureHandlerRootView>
+                              <KeyboardProvider>
+                                <RootLayoutNav />
+                              </KeyboardProvider>
+                            </GestureHandlerRootView>
+                          </NotificationProvider>
                         </PriceAlertsProvider>
                       </DiagnosisProvider>
                     </GrowPlanProvider>
