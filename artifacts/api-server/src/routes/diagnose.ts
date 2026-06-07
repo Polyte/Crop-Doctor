@@ -24,10 +24,20 @@ router.post("/diagnose", async (req, res) => {
 
     const { lang = "en" } = req.body as { lang?: string };
     const isSwahili = lang === "sw";
+    const isFrench = lang === "fr";
+    const isAmharic = lang === "am";
+
+    const langInstruction = isSwahili
+      ? "IMPORTANT: Respond ENTIRELY in Swahili (Kiswahili). All fields in the JSON must be in Swahili."
+      : isFrench
+      ? "IMPORTANT: Respond ENTIRELY in French. All fields in the JSON must be in French."
+      : isAmharic
+      ? "IMPORTANT: Respond ENTIRELY in Amharic (አማርኛ). All fields in the JSON must be in Amharic."
+      : "You analyze descriptions and images to identify diseases, pests, nutritional deficiencies, or health conditions.";
 
     const systemPrompt = `You are Farmguard AI, an expert agricultural diagnostician helping farmers identify issues with their ${subjectType === "crop" ? "crops" : "livestock"}.
 
-${isSwahili ? "IMPORTANT: Respond ENTIRELY in Swahili (Kiswahili). All fields in the JSON must be in Swahili." : "You analyze descriptions and images to identify diseases, pests, nutritional deficiencies, or health conditions."}
+${langInstruction}
 
 Always respond with a valid JSON object in exactly this format:
 {
@@ -41,7 +51,7 @@ Always respond with a valid JSON object in exactly this format:
   "prevention": ["prevention tip 1", "prevention tip 2", ...],
   "urgency": "Brief urgency statement for the farmer"
 }
-Do not include any text outside the JSON object. ${isSwahili ? "ALL values must be in Swahili." : ""}`;
+Do not include any text outside the JSON object.`;
 
     const userContent: Parameters<typeof anthropic.messages.create>[0]["messages"][0]["content"] = [];
 
@@ -58,28 +68,20 @@ Do not include any text outside the JSON object. ${isSwahili ? "ALL values must 
 
     const userMessage = isSwahili
       ? `Tafadhali chunguza shida hii ya ${subjectLabel}.\n\nMaelezo ya mkulima: ${description}`
+      : isFrench
+      ? `Veuillez diagnostiquer ce problème de ${subjectLabel}.\n\nDescription de l'agriculteur: ${description}`
       : `Please diagnose this ${subjectLabel} issue.\n\nFarmer's description: ${description}`;
 
-    userContent.push({
-      type: "text",
-      text: userMessage,
-    });
+    userContent.push({ type: "text", text: userMessage });
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 8192,
       system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: userContent,
-        },
-      ],
+      messages: [{ role: "user", content: userContent }],
     });
 
     const responseText = message.content[0].type === "text" ? message.content[0].text : "";
-
-    // Strip markdown code fences (Claude sometimes wraps JSON in ```json ... ```)
     const cleanText = responseText
       .replace(/^```json\s*/, "")
       .replace(/^```\s*/, "")
@@ -107,6 +109,67 @@ Do not include any text outside the JSON object. ${isSwahili ? "ALL values must 
   } catch (err) {
     req.log.error({ err }, "Diagnose error");
     res.status(500).json({ error: "Failed to diagnose. Please try again." });
+  }
+});
+
+router.post("/diagnose/followup", async (req, res) => {
+  try {
+    const { message, diagnosisContext, lang = "en" } = req.body as {
+      message: string;
+      diagnosisContext: {
+        condition: string;
+        summary: string;
+        subjectType: string;
+        treatments: string[];
+        causes: string[];
+        severity: string;
+      };
+      lang?: string;
+    };
+
+    if (!message || !diagnosisContext) {
+      res.status(400).json({ error: "message and diagnosisContext required" });
+      return;
+    }
+
+    const isFrench = lang === "fr";
+    const isSwahili = lang === "sw";
+    const isAmharic = lang === "am";
+
+    const langInstruction = isSwahili
+      ? "IMPORTANT: Respond entirely in Swahili."
+      : isFrench
+      ? "IMPORTANT: Respond entirely in French."
+      : isAmharic
+      ? "IMPORTANT: Respond entirely in Amharic (አማርኛ)."
+      : "";
+
+    const systemPrompt = `You are Farmguard AI, an expert agricultural advisor. A farmer has received a diagnosis and has a follow-up question. Answer helpfully, practically, and concisely.
+
+Context of their diagnosis:
+- Condition: ${diagnosisContext.condition}
+- Summary: ${diagnosisContext.summary}
+- Subject: ${diagnosisContext.subjectType}
+- Severity: ${diagnosisContext.severity}
+- Recommended treatments: ${diagnosisContext.treatments.join("; ")}
+- Causes: ${diagnosisContext.causes.join("; ")}
+
+${langInstruction}
+
+Keep your answer practical and actionable. Use plain language a farmer can understand. 2-4 sentences max unless a detailed explanation is needed.`;
+
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: "user", content: message }],
+    });
+
+    const reply = response.content[0].type === "text" ? response.content[0].text : "";
+    res.json({ reply });
+  } catch (err) {
+    req.log.error({ err }, "Followup error");
+    res.status(500).json({ error: "Failed to get answer. Please try again." });
   }
 });
 
