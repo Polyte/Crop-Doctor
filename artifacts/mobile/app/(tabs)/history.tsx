@@ -2,7 +2,7 @@ import { DiagnosisCard } from "@/components/DiagnosisCard";
 import { useDiagnosis } from "@/context/DiagnosisContext";
 import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import Head from "expo-router/head";
 import React, { useState } from "react";
 import {
@@ -12,6 +12,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,10 +25,18 @@ export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const { diagnoses, clearAll } = useDiagnosis();
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
 
   const filtered = diagnoses.filter(d => {
-    if (filter === "all") return true;
-    return d.subjectType === filter;
+    const matchType = filter === "all" || d.subjectType === filter;
+    const q = search.toLowerCase();
+    const matchSearch = !q
+      || d.condition?.toLowerCase().includes(q)
+      || d.cropType?.toLowerCase().includes(q)
+      || d.livestockType?.toLowerCase().includes(q)
+      || d.description?.toLowerCase().includes(q)
+      || d.symptoms?.some(s => s.toLowerCase().includes(q));
+    return matchType && matchSearch;
   });
 
   function handleClearAll() {
@@ -47,7 +56,7 @@ export default function HistoryScreen() {
         <title>{t("diagnosis.history")}</title>
         <meta name="description" content="Review your past crop and livestock AI diagnoses. Track conditions over time and revisit treatment recommendations." />
       </Head>
-      {/* Filter bar */}
+
       <View
         style={[
           styles.filterBar,
@@ -58,6 +67,26 @@ export default function HistoryScreen() {
           },
         ]}
       >
+        {/* Search bar */}
+        <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Feather name="search" size={16} color={colors.mutedForeground} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.foreground }]}
+            placeholder="Search by crop, disease, symptom…"
+            placeholderTextColor={colors.mutedForeground}
+            value={search}
+            onChangeText={setSearch}
+            returnKeyType="search"
+            clearButtonMode="while-editing"
+          />
+          {search.length > 0 && Platform.OS !== "ios" && (
+            <Pressable onPress={() => setSearch("")}>
+              <Feather name="x" size={15} color={colors.mutedForeground} />
+            </Pressable>
+          )}
+        </View>
+
+        {/* Filter row */}
         <View style={styles.filterRow}>
           {(["all", "crop", "livestock"] as Filter[]).map(f => (
             <Pressable
@@ -107,10 +136,10 @@ export default function HistoryScreen() {
               color={colors.mutedForeground}
             />
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              {filter === "all" ? t("no.diagnoses") : t("no.filter.diagnoses")}
+              {search ? "No matches found" : filter === "all" ? t("no.diagnoses") : t("no.filter.diagnoses")}
             </Text>
             <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              {t("history.appears.here")}
+              {search ? "Try a different search term" : t("history.appears.here")}
             </Text>
           </View>
         }
@@ -125,6 +154,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingHorizontal: 20,
     paddingBottom: 12,
+    gap: 10,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    padding: 0,
   },
   filterRow: {
     flexDirection: "row",

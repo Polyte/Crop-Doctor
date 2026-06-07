@@ -65,6 +65,58 @@ router.get("/crops/categories/list", async (req, res) => {
   }
 });
 
+// GET planting calendar — what to plant this month in your region
+router.get("/crops/calendar", async (req, res) => {
+  try {
+    const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
+    const region = (req.query.region as string) ?? "";
+
+    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const monthName = MONTH_NAMES[month - 1];
+
+    // East African seasons
+    const EAF_SEASON_HINTS: Record<number, string[]> = {
+      1: ["long rains", "annual"],
+      2: ["long rains", "annual"],
+      3: ["long rains", "annual"],
+      4: ["long rains", "annual"],
+      5: ["long rains", "annual"],
+      6: ["cool dry", "annual"],
+      7: ["cool dry", "annual"],
+      8: ["short rains", "annual"],
+      9: ["short rains", "annual"],
+      10: ["short rains", "annual"],
+      11: ["short rains", "annual"],
+      12: ["hot dry", "annual"],
+    };
+    const hints = EAF_SEASON_HINTS[month] ?? ["annual"];
+
+    let all = await db.select().from(crops);
+
+    // Filter by region if given
+    if (region) {
+      all = all.filter(c => !region || c.regions.toLowerCase().includes(region.toLowerCase()) || c.regions.toLowerCase().includes("all regions"));
+    }
+
+    // Filter by season hints
+    const inSeason = all.filter(c => {
+      const s = c.seasons.toLowerCase();
+      return hints.some(h => s.includes(h)) || s.includes("year-round");
+    });
+
+    res.json({
+      month,
+      monthName,
+      region: region || "East Africa",
+      crops: inSeason.slice(0, 20),
+      advice: `${monthName} is a good time to plant: ${inSeason.slice(0, 5).map(c => c.name).join(", ")}${inSeason.length > 5 ? " and more" : ""}.`,
+    });
+  } catch (err) {
+    req.log.error({ err }, "crops/calendar GET error");
+    res.status(500).json({ error: "Failed to fetch planting calendar" });
+  }
+});
+
 // POST add new crop (admin only — no auth, simple)
 router.post("/crops", async (req, res) => {
   try {

@@ -1,5 +1,6 @@
 import Head from "expo-router/head";
 import { useMarket, type FarmerProfile, type ListingWithFarmer, type Listing } from "@/context/MarketContext";
+import { usePriceAlerts } from "@/context/PriceAlertsContext";
 import { useI18n } from "@/context/LanguageContext";
 import { useColors } from "@/hooks/useColors";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -112,8 +113,13 @@ function ListingDetailModal({
   onClose: () => void;
   colors: ReturnType<typeof useColors>;
 }) {
+  const { isWatching, watchListing, unwatchListing } = usePriceAlerts();
+  const [showPriceInput, setShowPriceInput] = useState(false);
+  const [targetPrice, setTargetPrice] = useState("");
+
   if (!item) return null;
   const catColor = getCategoryColor(item.category);
+  const watching = isWatching(item.id);
 
   const handleCall = () => {
     if (!item.farmerPhone) return;
@@ -134,6 +140,24 @@ function ListingDetailModal({
     const { Linking } = require("react-native");
     const num = item.farmerPhone.replace(/\D/g, "");
     Linking.openURL(`https://wa.me/${num}?text=Hi, I'm interested in your ${item.productName} on Farmguard Market.`);
+  };
+
+  const handleWatchToggle = async () => {
+    if (watching) {
+      await unwatchListing(item.id);
+      Alert.alert("Removed", `Price alert for ${item.productName} has been removed.`);
+    } else {
+      setTargetPrice(String(Math.round(item.price * 0.9)));
+      setShowPriceInput(true);
+    }
+  };
+
+  const confirmWatch = async () => {
+    const tp = parseFloat(targetPrice);
+    if (isNaN(tp) || tp <= 0) { Alert.alert("Invalid", "Enter a valid target price."); return; }
+    await watchListing(item.id, item.productName, item.price, tp);
+    setShowPriceInput(false);
+    Alert.alert("Watching!", `You'll be notified when ${item.productName} drops to KSh ${tp.toLocaleString()} or below.`);
   };
 
   return (
@@ -179,6 +203,27 @@ function ListingDetailModal({
             </View>
           </View>
 
+          {/* Price alert input */}
+          {showPriceInput && (
+            <View style={[styles.alertBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.alertLabel, { color: colors.foreground }]}>Notify me when price drops to:</Text>
+              <View style={styles.alertInputRow}>
+                <Text style={[styles.alertCurrency, { color: colors.mutedForeground }]}>KSh</Text>
+                <TextInput
+                  style={[styles.alertInput, { color: colors.foreground, borderColor: colors.border }]}
+                  value={targetPrice}
+                  onChangeText={setTargetPrice}
+                  keyboardType="numeric"
+                  placeholder="Target price"
+                  placeholderTextColor={colors.mutedForeground}
+                />
+                <Pressable style={[styles.alertConfirm, { backgroundColor: colors.primary }]} onPress={confirmWatch}>
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>Set Alert</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+
           {item.description ? (
             <View style={styles.detailSection}>
               <Text style={[styles.detailSectionTitle, { color: colors.foreground }]}>Description</Text>
@@ -220,6 +265,17 @@ function ListingDetailModal({
               <Text style={[styles.ctaBtnOutlineText, { color: "#25D366" }]}>WhatsApp</Text>
             </Pressable>
           </View>
+
+          {/* Watch price button */}
+          <Pressable
+            style={[styles.watchBtn, { borderColor: watching ? colors.destructive : colors.border, backgroundColor: watching ? colors.destructive + "12" : colors.card }]}
+            onPress={handleWatchToggle}
+          >
+            <MaterialCommunityIcons name={watching ? "bell-off-outline" : "bell-plus-outline"} size={18} color={watching ? colors.destructive : colors.mutedForeground} />
+            <Text style={[styles.watchBtnText, { color: watching ? colors.destructive : colors.mutedForeground }]}>
+              {watching ? "Remove Price Alert" : "Set Price Alert"}
+            </Text>
+          </Pressable>
 
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -786,6 +842,14 @@ const styles = StyleSheet.create({
   ctaBtnText: { color: "#fff", fontWeight: "600", fontSize: 15 },
   ctaBtnOutline: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 2 },
   ctaBtnOutlineText: { fontWeight: "600", fontSize: 15 },
+  watchBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 12, borderRadius: 14, borderWidth: 1.5, marginHorizontal: 20, marginTop: 10 },
+  watchBtnText: { fontWeight: "600", fontSize: 14 },
+  alertBox: { marginHorizontal: 20, marginTop: 12, borderRadius: 14, borderWidth: 1, padding: 14, gap: 8 },
+  alertLabel: { fontSize: 13, fontWeight: "600" },
+  alertInputRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  alertCurrency: { fontSize: 14, fontWeight: "600" },
+  alertInput: { flex: 1, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 15 },
+  alertConfirm: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10 },
   sortRow: { flexDirection: "row", gap: 8, marginHorizontal: 20, marginBottom: 10 },
   sortPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
   sortPillText: { fontSize: 12, fontWeight: "500" },

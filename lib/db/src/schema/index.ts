@@ -26,3 +26,4 @@ export * from "./land-plants";
 export * from "./plant-followups";
 export * from "./agro-stores";
 export * from "./crops";
+export * from "./disease-reports";

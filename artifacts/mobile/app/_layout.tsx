@@ -22,6 +22,7 @@ import { MarketProvider } from "@/context/MarketContext";
 import { I18nProvider } from "@/context/LanguageContext";
 import { WeatherProvider } from "@/context/WeatherContext";
 import { NotificationProvider } from "@/context/NotificationContext";
+import { PriceAlertsProvider } from "@/context/PriceAlertsContext";
 import { setBaseUrl } from "@workspace/api-client-react";
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -41,6 +42,8 @@ function RootLayoutNav() {
       <Stack.Screen name="land/plot-detail" options={{ title: "Land Plot", headerShown: false }} />
       <Stack.Screen name="land/plant-detail" options={{ title: "Plant Detail", headerShown: false }} />
       <Stack.Screen name="land/stores" options={{ title: "Nearby Agro Stores", headerShown: false }} />
+      <Stack.Screen name="planting-calendar" options={{ title: "Planting Calendar", headerShown: false }} />
+      <Stack.Screen name="community-reports" options={{ title: "Disease Outbreaks", headerShown: false }} />
     </Stack>
   );
 }
@@ -72,6 +75,7 @@ export default function RootLayout() {
                   <MarketProvider>
                     <GrowPlanProvider>
                       <DiagnosisProvider>
+                        <PriceAlertsProvider>
                         <NotificationProvider>
                           <GestureHandlerRootView>
                             <KeyboardProvider>
@@ -79,6 +83,7 @@ export default function RootLayout() {
                             </KeyboardProvider>
                           </GestureHandlerRootView>
                         </NotificationProvider>
+                        </PriceAlertsProvider>
                       </DiagnosisProvider>
                     </GrowPlanProvider>
                   </MarketProvider>

@@ -6,6 +6,7 @@ import marketRouter from "./market";
 import landRouter from "./land";
 import weatherRouter from "./weather";
 import cropsRouter from "./crops";
+import communityRouter from "./community";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(marketRouter);
 router.use(landRouter);
 router.use(weatherRouter);
 router.use(cropsRouter);
+router.use(communityRouter);
 
 export default router;
